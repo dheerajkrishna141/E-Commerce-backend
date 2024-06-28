@@ -1,6 +1,8 @@
 package com.ECommerce.ECommercebackend.ServiceImpl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,19 +26,21 @@ public class AdminOrderUpdateImpl implements AdminOrderService {
 		Set<Long> orderIds = orderUpdate.getOrderIds();
 		int statusCode = orderUpdate.getStatusUpdateCode();
 		HashMap<Integer, String> orderStatus = OrderData.OrderStatus;
-		for (Long id : orderIds) {
+		List<CustOrder> orderList = new ArrayList<>();
+		try {
+			for (Long id : orderIds) {
 
-			try {
 				CustOrder order = orderRepo.findById(id)
-						.orElseThrow(() -> new OrderNotFoundExcpetion("Order not found!"));
+						.orElseThrow(() -> new OrderNotFoundExcpetion("Order with ID:"+id+" not found!"));
 				order.setStatus(orderStatus.get(statusCode));
-				orderRepo.save(order);
-
-			} catch (OrderNotFoundExcpetion e) {
-				throw new OrderNotFoundExcpetion(e.getMessage());
-			} catch (Exception e) {
-				throw new Exception(e.getMessage());
+				orderList.add(order);
+				
 			}
+			orderRepo.saveAll(orderList);
+		} catch (OrderNotFoundExcpetion e) {
+			throw new OrderNotFoundExcpetion(e.getMessage());
+		} catch (Exception e) {
+			throw new Exception(e.getMessage());
 		}
 
 		return "Successfully Updated";

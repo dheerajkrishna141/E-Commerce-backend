@@ -38,7 +38,15 @@ public class CustOrderController {
 	@PostMapping("/add")
 	public ResponseEntity<String> createOrder(Authentication auth, @RequestBody CustOrderDTO order) {
 		String username = auth.getName();
-		return new ResponseEntity<String>(orderService.createOrder(order, username), HttpStatus.ACCEPTED);
+		try {
+			return new ResponseEntity<String>(orderService.createOrder(order, username), HttpStatus.ACCEPTED);
+		} 
+		catch (BadRequestException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+		catch (Exception e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	@DeleteMapping("/delete")

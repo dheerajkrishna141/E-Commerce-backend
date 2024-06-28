@@ -1,6 +1,7 @@
 package com.ECommerce.ECommercebackend.ServiceImpl;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.coyote.BadRequestException;
@@ -67,7 +68,7 @@ public class CustOrderImpl implements CustOrderService {
 
 	@Override
 	@Transactional
-	public String createOrder(CustOrderDTO order, String username) {
+	public String createOrder(CustOrderDTO order, String username) throws Exception {
 		LocalUser Luser = userRepo.findByEmail(username);
 		DecimalFormat df = new DecimalFormat("#.##");
 		Double totalPrice = (double) 0;
@@ -84,39 +85,51 @@ public class CustOrderImpl implements CustOrderService {
 		newOrder.setAddress(addressList.get(0));
 		newOrder.setUser(Luser);
 		newOrder = orderRepo.save(newOrder);
+		List<Product> productList = new ArrayList<>();
+		List<CustOrderQuantities> orderQList = new ArrayList<>();
+		List<CustOrder> orderList = new ArrayList<>();
 
-		for (CustOrderQuantityDTO a : orderqDTO) {
-			Double price = (double) 0;
+		try {
+			for (CustOrderQuantityDTO a : orderqDTO) {
+				Double price = (double) 0;
 
-			CustOrderQuantities newQuant = new CustOrderQuantities();
-			newQuant.setOrder(newOrder);
-			Product fetchedProd = productRepo.findById(a.getProductId())
-					.orElseThrow(() -> new ProductNotFoundException("Product not found!"));
-			if (fetchedProd.getInventory().getStockQuantity() < a.getQuantity()) {
-				throw new OrderCouldNotBePlacedException("Product: " + fetchedProd.getName() + " inventory: "
-						+ fetchedProd.getInventory().getStockQuantity());
-			}
-			newQuant.setProduct(fetchedProd);
-			newQuant.setQuantity(a.getQuantity());
-			Inventory inventory = fetchedProd.getInventory();
-			inventory.setStockQuantity(inventory.getStockQuantity() - a.getQuantity());
-			fetchedProd.setInventory(inventory);
-			price += fetchedProd.getPrice() * a.getQuantity();
-			totalPrice += price;
-			try {
-				productRepo.save(fetchedProd);
+				CustOrderQuantities newQuant = new CustOrderQuantities();
+				newQuant.setOrder(newOrder);
+				Product fetchedProd = productRepo.findById(a.getProductId())
+						.orElseThrow(() -> new ProductNotFoundException("Product not found!"));
+				if (fetchedProd.getInventory().getStockQuantity() < a.getQuantity()) {
+					throw new OrderCouldNotBePlacedException("Product: " + fetchedProd.getName() + " inventory: "
+							+ fetchedProd.getInventory().getStockQuantity());
+				}
+				newQuant.setProduct(fetchedProd);
+				newQuant.setQuantity(a.getQuantity());
+				Inventory inventory = fetchedProd.getInventory();
+				inventory.setStockQuantity(inventory.getStockQuantity() - a.getQuantity());
+				fetchedProd.setInventory(inventory);
+				price += fetchedProd.getPrice() * a.getQuantity();
+				totalPrice += price;
+
+				productList.add(fetchedProd);
 				price = Double.valueOf(df.format(price));
 				newQuant.setQprice(price);
-				orderQRepo.save(newQuant);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				throw new OrderCouldNotBePlacedException(e.getMessage());
-			}
+				orderQList.add(newQuant);
 
+				totalPrice = Double.valueOf(df.format(totalPrice));
+				newOrder.setTotal(totalPrice);
+				orderList.add(newOrder);
+			}
+			productRepo.saveAll(productList);
+			orderQRepo.saveAll(orderQList);
+			orderRepo.saveAll(orderList);
 		}
-		totalPrice =  Double.valueOf(df.format(totalPrice));
-		newOrder.setTotal(totalPrice);
-		orderRepo.save(newOrder);
+		catch (ProductNotFoundException | OrderCouldNotBePlacedException e) {
+			// TODO Auto-generated catch block
+			throw new BadRequestException(e.getMessage());
+		}
+		 catch (Exception e) {
+			// TODO Auto-generated catch block
+			throw new Exception(e.getMessage());
+		}
 
 		return "Created Successfully!";
 	}
@@ -193,7 +206,5 @@ public class CustOrderImpl implements CustOrderService {
 
 		return "Successfully removed.";
 	}
-
-	
 
 }

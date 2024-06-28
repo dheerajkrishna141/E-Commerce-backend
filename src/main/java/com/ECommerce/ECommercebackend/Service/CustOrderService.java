@@ -9,7 +9,7 @@ import com.ECommerce.ECommercebackend.Payload.CustOrderDTO;
 public interface CustOrderService {
 
 	
-	public String createOrder(CustOrderDTO order, String username);
+	public String createOrder(CustOrderDTO order, String username) throws Exception;
 
 	public List<CustOrder> getOrders(String username);
 	
