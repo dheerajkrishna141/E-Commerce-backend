@@ -4,6 +4,10 @@ import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.ECommerce.ECommercebackend.Entity.Inventory;
@@ -31,6 +35,23 @@ public class ProductImpl implements ProductService {
 	public List<Product> getProducts() {
 
 		return productRepo.findAll();
+	}
+
+	public Page<Product> getProducts(Integer pageNo, Integer pageSize, String sort) {
+		if (pageSize == null) {
+			pageSize = 10;
+		}
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		if(sort!=null) {
+			if(sort.startsWith("-")) {
+				sort = sort.substring(1);
+				pageable = PageRequest.of(pageNo, pageSize, Direction.DESC, sort);
+			}else {
+				pageable = PageRequest.of(pageNo, pageSize, Direction.ASC, sort);
+				
+			}
+		}
+		return productRepo.findAll(pageable);
 	}
 
 	@Override
