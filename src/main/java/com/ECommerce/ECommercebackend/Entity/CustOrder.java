@@ -1,6 +1,7 @@
 package com.ECommerce.ECommercebackend.Entity;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,6 +48,10 @@ public class CustOrder {
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(name="total")
 	private Double total;
+	
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(name="created_time")
+	private Date timeStamp;
 	
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(name="status", nullable = false)

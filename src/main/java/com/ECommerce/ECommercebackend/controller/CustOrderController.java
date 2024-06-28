@@ -1,7 +1,5 @@
 package com.ECommerce.ECommercebackend.controller;
 
-import java.util.List;
-
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,10 +11,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ECommerce.ECommercebackend.Entity.CustOrder;
 import com.ECommerce.ECommercebackend.Exceptions.OrderNotFoundExcpetion;
+import com.ECommerce.ECommercebackend.Exceptions.UserNotFoundException;
 import com.ECommerce.ECommercebackend.Payload.CustOrderDTO;
 import com.ECommerce.ECommercebackend.Payload.orderDeleteDTO;
 import com.ECommerce.ECommercebackend.Service.CustOrderService;
@@ -29,9 +28,25 @@ public class CustOrderController {
 	private CustOrderService orderService;
 
 	@GetMapping
-	public ResponseEntity<List<CustOrder>> getOrders(Authentication auth) {
+	public ResponseEntity<?> getOrders(Authentication auth,
+			@RequestParam(required = false) Integer pageNo, @RequestParam(required = false) Integer pageSize,
+			@RequestParam(required = false) String sort) {
 		String username = auth.getName();
-		return new ResponseEntity<List<CustOrder>>(orderService.getOrders(username), HttpStatus.OK);
+		try {
+			if(pageNo == null) {
+				return new ResponseEntity<>(orderService.getOrders(username), HttpStatus.OK);
+			}
+			return new ResponseEntity<>(orderService.getOrders(username, pageNo, pageSize, sort), HttpStatus.OK);
+		}
+		
+		catch (UserNotFoundException e) {
+			// TODO Auto-generated catch block
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
 	}
 
@@ -40,11 +55,9 @@ public class CustOrderController {
 		String username = auth.getName();
 		try {
 			return new ResponseEntity<String>(orderService.createOrder(order, username), HttpStatus.ACCEPTED);
-		} 
-		catch (BadRequestException e) {
+		} catch (BadRequestException e) {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -74,6 +87,5 @@ public class CustOrderController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
 
 }

@@ -2,11 +2,16 @@ package com.ECommerce.ECommercebackend.ServiceImpl;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -57,13 +62,46 @@ public class CustOrderImpl implements CustOrderService {
 	private String BaseUrl;
 
 	@Override
+	public Page<CustOrder> getOrders(String username, Integer pageNo, Integer pageSize, String sort) {
+
+		LocalUser Luser = userRepo.findByEmail(username);
+
+		if (Luser == null) {
+			throw new UserNotFoundException("user not found!");
+		}
+
+		if (pageSize == null) {
+			pageSize = 10;
+		}
+		Pageable pr = PageRequest.of(pageNo, pageSize);
+
+		if (sort == null) {
+			pr = PageRequest.of(pageNo, (pageSize != null ? pageSize : 10), Direction.DESC, "id");
+		} else {
+
+			if (sort.startsWith("-")) {
+				sort = sort.substring(1);
+				pr = PageRequest.of(pageNo, pageSize, Direction.DESC, sort);
+			} else {
+				pr = PageRequest.of(pageNo, pageSize, Direction.ASC, sort);
+			}
+		}
+
+		return orderRepo.findByUser(pr, Luser);
+
+	}
+
+	@Override
 	public List<CustOrder> getOrders(String username) {
 
 		LocalUser Luser = userRepo.findByEmail(username);
 		if (Luser == null) {
-			throw new UserNotFoundException("user not found!");
+			throw new UserNotFoundException("User not found");
+		} else {
+			return orderRepo.findByUser(Luser);
+
 		}
-		return orderRepo.findByUser(Luser);
+
 	}
 
 	@Override
@@ -84,6 +122,7 @@ public class CustOrderImpl implements CustOrderService {
 		}
 		newOrder.setAddress(addressList.get(0));
 		newOrder.setUser(Luser);
+		newOrder.setTimeStamp(new Date(System.currentTimeMillis()));
 		newOrder = orderRepo.save(newOrder);
 		List<Product> productList = new ArrayList<>();
 		List<CustOrderQuantities> orderQList = new ArrayList<>();
@@ -121,12 +160,10 @@ public class CustOrderImpl implements CustOrderService {
 			productRepo.saveAll(productList);
 			orderQRepo.saveAll(orderQList);
 			orderRepo.saveAll(orderList);
-		}
-		catch (ProductNotFoundException | OrderCouldNotBePlacedException e) {
+		} catch (ProductNotFoundException | OrderCouldNotBePlacedException e) {
 			// TODO Auto-generated catch block
 			throw new BadRequestException(e.getMessage());
-		}
-		 catch (Exception e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			throw new Exception(e.getMessage());
 		}
