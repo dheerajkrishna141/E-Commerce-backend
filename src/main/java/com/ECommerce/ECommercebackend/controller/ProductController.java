@@ -3,7 +3,9 @@ package com.ECommerce.ECommercebackend.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +23,7 @@ public class ProductController {
 	@Autowired
 	private ProductService productService;
 
-	@PostMapping("/admin/add")
+	@PostMapping
 	public ResponseEntity<String> addProduct(@RequestBody ProductDTO product) {
 		return new ResponseEntity<String>(productService.addProduct(product), HttpStatus.ACCEPTED);
 	}
@@ -42,7 +44,8 @@ public class ProductController {
 		}
 	}
 
-	@PostMapping("/admin/update/{id}")
+	@PatchMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> updateProduct(@RequestBody ProductDTO product, @PathVariable(name = "id") long id) {
 		try {
 			return new ResponseEntity<>(productService.updateProduct(product, id), HttpStatus.ACCEPTED);

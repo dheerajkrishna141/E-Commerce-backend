@@ -50,7 +50,7 @@ public class CustOrderController {
 
 	}
 
-	@PostMapping("/add")
+	@PostMapping
 	public ResponseEntity<String> createOrder(Authentication auth, @RequestBody CustOrderDTO order) {
 		String username = auth.getName();
 		try {
@@ -62,7 +62,7 @@ public class CustOrderController {
 		}
 	}
 
-	@DeleteMapping("/delete")
+	@DeleteMapping
 	public ResponseEntity<?> cancelOrder(Authentication auth, @RequestBody orderDeleteDTO orderDTO) {
 		try {
 			String username = auth.getName();
@@ -75,7 +75,7 @@ public class CustOrderController {
 		}
 	}
 
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<?> cancelOrder(Authentication auth, @PathVariable(name = "id") Long id,
 			@RequestBody orderDeleteDTO orderDTO) {
 		try {

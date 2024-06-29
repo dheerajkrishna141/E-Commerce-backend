@@ -33,9 +33,10 @@ public class WebSecurityConfig {
 
 		CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
 		http.addFilterAfter(csrfTokenFilter, BasicAuthenticationFilter.class);
-		
-		http.csrf(csrf -> csrf.csrfTokenRequestHandler(requestHandler).ignoringRequestMatchers("/user/register").csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) );
-		
+
+		http.csrf(csrf -> csrf.csrfTokenRequestHandler(requestHandler).ignoringRequestMatchers("/user/register")
+				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
+
 		http.cors(cors -> {
 			cors.configurationSource(request -> {
 				CorsConfiguration config = new CorsConfiguration();
@@ -50,10 +51,11 @@ public class WebSecurityConfig {
 		});
 //	http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
 		http.authorizeHttpRequests(auth -> {
-			auth.requestMatchers("/products", "/user/register", "/user/verify", "/user/forgot", "/user/resetPassword")
-					.permitAll();
-			auth.requestMatchers("/user/orders/**").hasAnyRole("USER","ADMIN");
-			auth.requestMatchers(HttpMethod.DELETE, "/user/**").hasAnyRole("USER","ADMIN");
+			auth.requestMatchers("/user/register", "/user/verify", "/user/forgot", "/user/resetPassword").permitAll();
+			auth.requestMatchers(HttpMethod.GET, "/products").permitAll();
+			auth.requestMatchers("/products/**").hasRole("ADMIN");
+			auth.requestMatchers("/user/orders/**").hasAnyRole("USER", "ADMIN");
+			auth.requestMatchers(HttpMethod.DELETE, "/user/**").hasAnyRole("USER", "ADMIN");
 			auth.requestMatchers("/admin/**").hasRole("ADMIN");
 
 			auth.anyRequest().authenticated();
