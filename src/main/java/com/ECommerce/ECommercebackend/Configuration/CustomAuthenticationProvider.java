@@ -1,26 +1,19 @@
 package com.ECommerce.ECommercebackend.Configuration;
 
-import java.sql.Timestamp;
-import java.sql.Timestamp;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.ECommerce.ECommercebackend.Entity.LocalUser;
-import com.ECommerce.ECommercebackend.Entity.VerificationToken;
-import com.ECommerce.ECommercebackend.Exceptions.UserNotVerifiedException;
 import com.ECommerce.ECommercebackend.Repository.UserRepo;
-import com.ECommerce.ECommercebackend.Repository.VerificationRepo;
-import com.ECommerce.ECommercebackend.Service.EmailService;
-import com.ECommerce.ECommercebackend.Service.JWTService;
 
 import jakarta.transaction.Transactional;
 
@@ -33,14 +26,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	private EmailService emailService;
-
-	@Autowired
-	private JWTService jwt;
-
-	@Autowired
-	private VerificationRepo verificationRepo;
 
 	@Override
 	@Transactional
@@ -81,5 +66,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 		return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
 
 	}
+	
+	
 
 }
