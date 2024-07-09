@@ -54,7 +54,7 @@ public class CustOrderController {
 	public ResponseEntity<String> createOrder(Authentication auth, @RequestBody CustOrderDTO order) {
 		String username = auth.getName();
 		try {
-			return new ResponseEntity<String>(orderService.createOrder(order, username), HttpStatus.ACCEPTED);
+			return new ResponseEntity<String>(orderService.createOrder(username, order), HttpStatus.ACCEPTED);
 		} catch (BadRequestException e) {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {

@@ -1,5 +1,7 @@
 package com.ECommerce.ECommercebackend.Configuration;
 
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -46,6 +48,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 			}
 		} else {
 			throw new UsernameNotFoundException("username: " + authentication.getName() + " not found");
+//			return new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
+
 		}
 
 	}

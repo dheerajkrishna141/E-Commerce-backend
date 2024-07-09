@@ -9,6 +9,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ECommerce.ECommercebackend.Annotation.UserAvailabiltyCheck;
 import com.ECommerce.ECommercebackend.Entity.Address;
 import com.ECommerce.ECommercebackend.Entity.LocalUser;
 import com.ECommerce.ECommercebackend.Entity.Roles;
@@ -30,6 +31,7 @@ import com.ECommerce.ECommercebackend.Service.UserService;
 import jakarta.transaction.Transactional;
 
 @Service
+@UserAvailabiltyCheck
 public class UserImpl implements UserService {
 
 	@Autowired
@@ -107,15 +109,13 @@ public class UserImpl implements UserService {
 	public Address addAddress(AddressDTO address, String username) throws Exception {
 
 		LocalUser Luser = userRepo.findByEmail(username);
-		if (Luser == null) {
-			throw new UserNotFoundException("user not found!");
-		}
-		if(!Luser.isEmailVerified()) {
+
+		if (!Luser.isEmailVerified()) {
 			throw new UserNotVerifiedException("Please verify your account!");
 		}
 		try {
-		Address newAddress = modelmapper.map(address, Address.class);
-		newAddress.setUser(Luser);
+			Address newAddress = modelmapper.map(address, Address.class);
+			newAddress.setUser(Luser);
 			return addressRepo.save(newAddress);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -140,17 +140,14 @@ public class UserImpl implements UserService {
 		return false;
 	}
 
-	public String sendRPLink(String email) {
+	public String sendRPLink(String username) {
 
-		LocalUser Luser = userRepo.findByEmail(email);
-		if (Luser != null) {
+		LocalUser Luser = userRepo.findByEmail(username);
 
-			String pRToken = jwt.generatePasswordResetJWT(Luser);
-			emailService.sendRPVeriificationEmail(Luser, pRToken);
-			return "Email sent successfully!";
+		String pRToken = jwt.generatePasswordResetJWT(Luser);
+		emailService.sendRPVeriificationEmail(Luser, pRToken);
+		return "Email sent successfully!";
 
-		}
-		throw new UserNotFoundException("User not found!");
 	}
 
 	@Override
@@ -173,9 +170,7 @@ public class UserImpl implements UserService {
 	@Transactional
 	public LoginResponseDTO login(String username) {
 		LocalUser Luser = userRepo.findByEmail(username);
-		if(Luser == null) {
-			throw new UserNotFoundException("User not Found!");
-		}
+
 		if (!Luser.isEmailVerified()) {
 			List<VerificationToken> verificationTokens = Luser.getVerificationTokens();
 
@@ -194,17 +189,13 @@ public class UserImpl implements UserService {
 		}
 		return new LoginResponseDTO(Luser, true, "Successfully logged in");
 	}
-	
-
 
 	@Override
 	public List<Address> getAddresses(String username) {
 		// TODO Auto-generated method stub
 		LocalUser Luser = userRepo.findByEmail(username);
-		if(Luser != null) {
-			return Luser.getAddresses();
-		}
-		throw new UserNotFoundException("user not found!");
+		return Luser.getAddresses();
+
 	}
 
 }

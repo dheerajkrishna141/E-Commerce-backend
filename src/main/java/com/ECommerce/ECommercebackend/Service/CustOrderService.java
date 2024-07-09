@@ -10,7 +10,7 @@ import com.ECommerce.ECommercebackend.Payload.CustOrderDTO;
 public interface CustOrderService {
 
 	
-	public String createOrder(CustOrderDTO order, String username) throws Exception;
+	public String createOrder(String username,CustOrderDTO order) throws Exception;
 
 	public Page<CustOrder> getOrders(String username, Integer pageNo, Integer pageSize, String sort);
 	public List<CustOrder> getOrders(String username);

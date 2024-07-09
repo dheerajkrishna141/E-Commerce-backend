@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.ECommerce.ECommercebackend.Annotation.UserAvailabiltyCheck;
 import com.ECommerce.ECommercebackend.Entity.Address;
 import com.ECommerce.ECommercebackend.Entity.CustOrder;
 import com.ECommerce.ECommercebackend.Entity.CustOrderQuantities;
@@ -38,6 +39,7 @@ import com.ECommerce.ECommercebackend.Service.CustOrderService;
 import jakarta.transaction.Transactional;
 
 @Service
+@UserAvailabiltyCheck
 public class CustOrderImpl implements CustOrderService {
 
 	@Autowired
@@ -66,9 +68,6 @@ public class CustOrderImpl implements CustOrderService {
 
 		LocalUser Luser = userRepo.findByEmail(username);
 
-		if (Luser == null) {
-			throw new UserNotFoundException("user not found!");
-		}
 
 		if (pageSize == null) {
 			pageSize = 10;
@@ -95,24 +94,17 @@ public class CustOrderImpl implements CustOrderService {
 	public List<CustOrder> getOrders(String username) {
 
 		LocalUser Luser = userRepo.findByEmail(username);
-		if (Luser == null) {
-			throw new UserNotFoundException("User not found");
-		} else {
-			return orderRepo.findByUser(Luser);
 
-		}
+		return orderRepo.findByUser(Luser);
 
 	}
 
 	@Override
 	@Transactional
-	public String createOrder(CustOrderDTO order, String username) throws Exception {
+	public String createOrder(String username, CustOrderDTO order) throws Exception {
 		LocalUser Luser = userRepo.findByEmail(username);
 		DecimalFormat df = new DecimalFormat("#.##");
 		Double totalPrice = (double) 0;
-		if (Luser == null) {
-			throw new UsernameNotFoundException("user not found!");
-		}
 		CustOrder newOrder = new CustOrder();
 		List<CustOrderQuantityDTO> orderqDTO = order.getOrderQuantity();
 
